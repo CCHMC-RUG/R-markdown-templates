@@ -1,0 +1,249 @@
+---
+title: "Creating Custom R Markdown Templates"
+author: "Zana Percy"
+date: "12/4/2019"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+fontsize: 14pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br><br>
+Disclaimer: I borrowed several examples from various resources that I reference later in this document. 
+
+# Introduction to R Markdown 
+<br><br>
+R Markdown is a file format type that allows you to create documents with imbedded R code and results. It is also a mark-up language, meaning it uses basic text plus symbols to create certain formatting elements that are implemented when the document is converted to its final form (ie. HTML document, PDF, Word Document). 
+<br><br>
+This will be a very brief overview of some main features of R Markdown, but there are *many* resources on the internet with much more detailed information, such as: [R Markdown: the Definitive Guide](https://bookdown.org/yihui/rmarkdown/html-document.html#mathjax-equations) or [video tutorials from R Studio](https://rmarkdown.rstudio.com/lesson-1.html).
+<br><br>
+
+## Rmd is good for making reports
+<br><br>
+
+* Decreases effort (compared to pasting results into new document)
+
+* If data is updated or methods change, the tables or graphs are automatically updated
+
+* Accessible for R users and non-users
+
+     + Can hide or show code chunks
+     
+     + Comments and interpretation is rendered as separate text 
+     
+* Improved transparency and reproducibility  
+
+* Formatting is built in
+
+* Highly customizable!
+
+## Example of code chunk with output
+<br><br>
+
+```{r}
+summary(cars)
+```
+<br><br>
+
+## How I use Rmd in my workflow
+<br><br>
+I assume that any code I write may need to be seen by other people, so I always just work directly in Rmd!
+<br><br>
+
+1. Each new analysis project gets its own R Project
+
+2. Each sub-analysis gets its own self-contained Rmd document (ie. data exploration, multiple regression models, sensitivity analyses)
+
+     i. Data is imported and cleaned
+   
+     ii. Analysis is performed with tables and figures generated along the way
+   
+     iii. Comments and interpretation are given
+     
+3. For manuscripts, I create a final Rmd document where all tables and figures for publication are together in one place with captions 
+
+<br><br>
+I will often make notes about methodology in these Rmd files so I can reference them later when I write my methods section. 
+<br><br>
+
+# Text formatting options
+<br><br>
+[R Studio's R Markdown Cheet sheet](https://rmarkdown.rstudio.com/lesson-15.html) is a great reference for much of what is covered below. Cheet sheets are also available from the help tab in R Studio.
+<br><br>
+*Italics*: `*Italics*`
+<br><br>
+**Bold**: `**Bold**`
+<br><br>
+
+* Bullet list item: `* Bullet list item (note single space after asteriks)`
+     - Sub-bullet: `     - Sub-bullet (five spaces before -, one space after -)`
+     
+$A^2 + B^2 = C^2$: `$A^2 + B^2 = C^2$`
+<br><br>
+$\beta$: `$\beta$`
+<br>
+
+[Document showing use of many special math symbols](https://www.calvin.edu/~rpruim/courses/s341/S17/from-class/MathinRmd.html)
+<br><br>
+
+### Header 3 `### Header 3`
+
+<br><br>
+
+#### Header 4 `#### Header 4`
+
+<br><br>
+Insert an image: 
+
+![](Unknown.jpeg) `![](file path)`
+
+[Hyperlink](https://github.com/CCHMC-RUG): `[Text](weblink)`
+<br><br>
+Here is [another good document](https://www.stat.cmu.edu/~cshalizi/rmarkdown/#mark-up-markdown) with formatting instructions and options.
+<br><br>
+
+# Output customization options
+
+<br><br>
+After you finish your Rmd document (or along the way), you will "knit" it into a completed product. A lot of the customization options for how the finished product will look are specified at the top of the Rmd file with arguments in the YAML header. 
+<br><br>
+Some helpful arguments:
+<br><br>
+`fontsize: 12pt`
+<br><br>
+`geometry: margin=1in`
+<br><br>
+Most other arguments are named as sub-arguments under `output:`
+<br><br>
+To render an HTML file:
+```{r,eval=FALSE}
+output: html_document
+```
+
+To specify options on the HTML file, such as adding a table of contents:
+```{r, eval=FALSE}
+output: 
+  html_document:
+    toc=TRUE 
+```
+
+Make the table of contents float as you scroll:
+```{r, eval=FALSE}
+output: 
+  html_document:
+    toc=TRUE 
+    toc_float=TRUE
+```
+<br><br>
+There are *many* more customization options, and HTML output has the most features and is the simplest to use. It is also possible to make slideshows with R Markdown, but I will not cover that here.
+
+# Code chunk options
+
+## Setup chunk
+
+The setup chunk usually comes right after the YAML header and specifies the defaults for the chunks that follow. 
+
+```{r, eval=FALSE}
+{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Individual chunks
+
+Code chunks can have their own individual specifications. Specify chunk options like this:
+
+Do not print code chunk in final document:
+```{r,eval=FALSE}
+{r, echo=FALSE}
+```
+
+Do not run code chunk in final document:
+```{r,eval=FALSE}
+{r, eval=FALSE}
+```
+
+Do not print messages in final document:
+```{r,eval=FALSE}
+{r, message=FALSE}
+```
+
+Do not print warnings in final document: 
+```{r,eval=FALSE}
+{r, warning=FALSE}
+```
+<br><br>
+
+# Create custom template 
+
+**Step 1:** Create an R package. This is not as scary as it sounds!
+<br><br>
+First, make sure that you have the `devtools` package installed.
+
+```{r,eval=FALSE}
+install.packages("devtools")
+```
+<br><br>
+Now we can create the package.
+
+1. File > "New Project"
+
+2. New Directory > R Package
+
+3. Name your package (I called mine `mypackage`)
+
+<br><br>
+**Step 2:** Create directory with proper folders
+<br><br>
+Create a directory with the properly named file paths. This step is very sensitive to file names, so only change the first part where the package name is specified!
+<br><br>
+Run in console:
+```{r,eval=FALSE}
+dir.create("mypackage/inst/rmarkdown/templates/report/skeleton", recursive = TRUE)
+```
+<br><br>
+**Step 3:** Create your customized Rmd file!
+<br><br>
+Create a skeleton.Rmd file
+<br><br>
+File > New File > R Markdown
+<br><br>
+This is the document that will become your custom template. 
+<br><br>
+
+* Add render options in the YAML heading
+* Add default chunk options in the setup chunk
+* Load frequently used packages
+* Any other text or formatting that you want on your template
+
+<br><br>
+When you are finished, save it as `skeleton.Rmd` in the `skeleton` folder that we just created.
+<br><br>
+**Step 4:** Make YAML file
+<br><br>
+File > New File > Text file
+<br><br>
+Type this in the document (Must include one line after the `name` line):
+```{r,eval=FALSE}
+name: My Report Template
+
+```
+<br><br>
+Save this file as `template.yaml` in the `report` folder (one step up from the skeleton folder)
+<br><br>
+**Step 5:** Install your package!
+<br><br>
+```{r,eval=FALSE}
+devtools::install("mypackage")
+```
+<br><br>
+You can test your template by trying to make a new R Markdown file and selecting the `From Template` option. You should see your template listed there.
+<br><br>
+If you want to make changes to your template, make sure to click the `Install and Restart` button in the Build tab (top right panel in R Studio) once you are finished.
+<br><br>
+Here is another tutorial for template creation [with screenshots](http://chester.rbind.io/ecots2k16/template_pkg/).
